@@ -1,0 +1,5 @@
+dataset/
+*.docx
+*.idea
+models/
+__*
