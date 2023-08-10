@@ -3,7 +3,7 @@ from transformers import WhisperTokenizer
 from transformers import WhisperProcessor
 from transformers import WhisperForConditionalGeneration
 
-from dataset import get_common_voice_dataset
+from dataset import prep_asr_datasets
 from datacollator import DataCollatorSpeechSeq2SeqWithPadding
 
 import evaluate
@@ -40,7 +40,7 @@ def main():
     model.config.forced_decoder_ids = None
     model.config.suppress_tokens = []
 
-    asr_datasets = get_common_voice_dataset(
+    asr_datasets = prep_asr_datasets(
         feature_extractor=feature_extractor,
         tokenizer=tokenizer
     )
@@ -62,8 +62,8 @@ def main():
         per_device_eval_batch_size=8,
         predict_with_generate=True,
         generation_max_length=225,
-        save_steps=1000,
-        eval_steps=1000,
+        save_steps=500,
+        eval_steps=500,
         logging_steps=25,
         report_to=["tensorboard"],
         load_best_model_at_end=True,
