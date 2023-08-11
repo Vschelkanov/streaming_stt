@@ -3,3 +3,5 @@ dataset/
 *.idea
 models/
 __*
+flagged/
+.ipynb_checkpoints/
