@@ -80,7 +80,8 @@ class LiveWav2Vec2:
 
     @staticmethod
     def asr_process(model_name, in_queue, output_queue):
-        wave2vec_asr = Wave2Vec2Inference(model_name)
+        # wave2vec_asr = Wave2Vec2Inference(model_name)
+        wave2vec_asr = WhisperInference(model_name)
 
         print("\nlistening to your voice\n")
         while True:
@@ -96,7 +97,7 @@ class LiveWav2Vec2:
             inference_time = time.perf_counter()-start
             sample_length = len(float64_buffer) / 16000  # length in sec
             if text != "":
-                output_queue.put([text,sample_length,inference_time,confidence])
+                output_queue.put([text, sample_length, inference_time, confidence])
 
     @staticmethod
     def get_input_device_id(device_name, microphones):
@@ -124,13 +125,15 @@ class LiveWav2Vec2:
 if __name__ == "__main__":
     print("Live ASR")
 
-    asr = LiveWav2Vec2('jonatasgrosman/wav2vec2-large-xlsr-53-english')
+    # asr = LiveWav2Vec2('jonatasgrosman/wav2vec2-large-xlsr-53-english')
+    asr = LiveWav2Vec2('./models/checkpoint-300')
     asr.start()
 
     try:
         while True:
             text, sample_length, inference_time, confidence = asr.get_last_text()
-            print(f"{sample_length:.3f}s\t{inference_time:.3f}s\t{confidence}\t{text}")
+            # print(f"{sample_length:.3f}s\t{inference_time:.3f}s\t{confidence}\t{text}")
+            print(text)
 
     except KeyboardInterrupt:
         asr.stop()

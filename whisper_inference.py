@@ -14,7 +14,7 @@ class WhisperInference:
         # self.model.to(self.device)
 
     def buffer_to_text(self, audio_buffer):
-        return self.pipe(audio_buffer)["text"].strip()
+        return self.pipe(audio_buffer)["text"].strip(), None
 
     # def sh_buffer_to_text(self, audio_buffer):
     #     if len(audio_buffer) == 0:
