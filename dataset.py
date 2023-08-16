@@ -56,6 +56,20 @@ def prep_asr_datasets(feature_extractor, tokenizer):
     return main_dataset
 
 
+def prep_asr_test_dataset(feature_extractor, tokenizer):
+    assignment_dataset = get_assignment_dataset()
+
+    test_dataset = DatasetDict()
+    test_dataset['test'] = assignment_dataset['test']
+
+    test_dataset = test_dataset.map(
+        partial(prepare_dataset, feature_extractor=feature_extractor, tokenizer=tokenizer),
+        remove_columns=test_dataset.column_names['test'],
+        num_proc=2
+    )
+    return test_dataset
+
+
 def main():
     pass
 

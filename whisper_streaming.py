@@ -5,6 +5,7 @@ import time
 from queue import Queue
 import pyaudio
 import webrtcvad
+from functools import lru_cache
 
 
 class Live:
