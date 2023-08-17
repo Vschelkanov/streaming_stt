@@ -210,7 +210,8 @@ class ASRStreamingProcessor:
             self.chunk_completed_sentence()
 
         # if the audio buffer is longer than 30s, trim it...
-        if len(self.audio_buffer) / self.SAMPLING_RATE > 30:
+        # if len(self.audio_buffer) / self.SAMPLING_RATE > 30:
+        if len(self.audio_buffer) / self.SAMPLING_RATE > 10:
             # ...on the last completed segment (labeled by Whisper)
             self.chunk_completed_segment(result)
             print(f"Chunking because of len", file=sys.stderr)
