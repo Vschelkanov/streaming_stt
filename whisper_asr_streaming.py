@@ -1,18 +1,23 @@
-from whisper_online import *
+import sys
 import numpy as np
 import threading
 import time
 from queue import Queue
 import pyaudio
 import webrtcvad
-from functools import lru_cache
+from whisper_asr import ASRWithFasterWhisper, ASRStreamingProcessor, load_audio_chunk
 
 
 class Live:
     exit_event = threading.Event()
     device_name = 'default'
-    asr_model = FasterWhisperASR('tg', './models/ctranslate2-whisper')
-    online_processor = OnlineASRProcessor(asr_model, None)
+    asr_model = ASRWithFasterWhisper(model_dir='./models/ctranslate2-whisper')
+    online_processor = ASRStreamingProcessor(asr=asr_model)
+
+    def warmup(self, warmup_audio_path='warmup.wav'):
+        print("Warming Up ASR", file=sys.stderr, flush=True)
+        audio_chunk = load_audio_chunk(warmup_audio_path, 0, 1)
+        self.asr_model.transcribe(audio_chunk)
 
     def stop(self):
         Live.exit_event.set()
@@ -40,8 +45,9 @@ class Live:
         vad.set_mode(2)
 
         audio = pyaudio.PyAudio()
-        frame_duration = 20
+        frame_duration = 30
         rate = 16000
+        channels = 1
         chunk = int(rate * frame_duration / 1000)
 
         microphones = self.list_microphones(audio)
@@ -50,7 +56,7 @@ class Live:
 
         stream = audio.open(input_device_index=selected_input_device_id,
                             format=pyaudio.paInt16,
-                            channels=1,
+                            channels=channels,
                             rate=rate,
                             input=True,
                             frames_per_buffer=chunk)
@@ -65,7 +71,7 @@ class Live:
             if is_speech:
                 frames += frame
             else:
-                if len(frames) > 1:
+                if len(frames) >= 300:
                     asr_input_queue.put(frames)
                 frames = b''
         stream.stop_stream()
@@ -73,10 +79,13 @@ class Live:
         audio.terminate()
 
     def asr_process(self, in_queue, output_queue):
-        print("\nlistening to your voice\n")
+        print("\nListening to your voice\n", file=sys.stderr, flush=True)
+
         while True:
             audio_frames = in_queue.get()
+
             if audio_frames == "close":
+                print("Breaking ASR Loop", file=sys.stderr, flush=True)
                 break
 
             buffer = np.frombuffer(
@@ -135,10 +144,10 @@ class Live:
         else:
             print(o, file=sys.stderr, flush=True)
 
-
 def main():
     print("Live ASR")
     asr_object = Live()
+    asr_object.warmup()
     asr_object.start()
 
     try:
